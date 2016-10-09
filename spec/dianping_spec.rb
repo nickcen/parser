@@ -19,6 +19,14 @@ describe Parser::Dianping do
     open(File.expand_path('../pages/dianpings/page_3.htm', __FILE__)).read
   end
 
+  let(:page_4) do 
+    open(File.expand_path('../pages/dianpings/page_4.htm', __FILE__)).read
+  end
+
+  let(:page_5) do 
+    open(File.expand_path('../pages/dianpings/page_5.htm', __FILE__)).read
+  end
+
   let(:parser) do 
     Parser::Dianping.new
   end
@@ -86,5 +94,36 @@ describe Parser::Dianping do
     expect(entry[:enviro]).to eq(8.1)
     expect(entry[:service]).to eq(8.1)
     expect(entry[:rank]).to eq(4.0)
+  end
+
+  it 'parse entry page of marriage' do
+    entry = parser.parse_entry_page(page_4)
+
+    expect(entry[:name]).to eq("优山定制西服男士西装（原优衫）(望京店)")
+    expect(entry[:address]).to eq("望京SOHO塔2C座309")
+    expect(entry[:tels].length).to eq(1)
+    expect(entry[:tels].first).to eq("4006781313")
+    expect(entry[:pic]).to eq("http://i2.s2.dpfile.com/pc/9W7oKy74IyhTVsXi09XVI9ylK1otbaV0H6tsjWI-Ou3Ynq2nABw3HdANpGd64tUAlsnUJoN_M7g6XO0kYb0ezw.jpg")
+
+    expect(entry[:comment]).to eq(71)
+    expect(entry[:avg_cost]).to eq(4325)
+    expect(entry[:rank]).to eq(5.0)
+  end
+
+  it 'parse entry page of training' do
+    entry = parser.parse_entry_page(page_5)
+
+    puts entry
+
+    expect(entry[:name]).to eq("澳思英语(望京店)")
+    expect(entry[:address]).to eq("望京街10号望京SOHO附近咖啡厅上课")
+    expect(entry[:tels].length).to eq(0)
+    expect(entry[:pic]).to eq("http://qcloud.dpfile.com/pc/r6sNV3beyJUDirPKnJv8MLeUZM8O0FfMQezm0--l7CLVgmtIl4GvnXTIUovX6RHxDqkiVRwIFfRusszHki9DfQ.jpg")
+
+    expect(entry[:comment]).to eq(0)
+    expect(entry[:effect]).to eq(6.9)
+    expect(entry[:tech]).to eq(6.9)
+    expect(entry[:enviro]).to eq(6.9)
+    expect(entry[:rank]).to eq(3.5)
   end
 end

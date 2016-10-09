@@ -45,14 +45,19 @@ module Parser
 
     def parse_entry_page(file_content)
       begin
-
         doc = Nokogiri::HTML(file_content)
 
-        category_name = doc.css("a.current-category")[0].text
+        categories = doc.css("a.current-category")
+        return if categories.empty?
+
+        category_name = categories[0].text
 
         case category_name
         when '学习培训'
           parse_training_page(doc)
+        when '结婚','亲子'
+          parse_marriage_page(doc)
+        when '酒店', '购物'
         else
           parse_service_page(doc)
         end
@@ -71,7 +76,7 @@ module Parser
       extract_items(doc, 'div.brief-info div.rank .item', ret)
       extract_tels(doc, 'div.phone span.item', ret)
 
-      ret[:rank] = doc.css('span.mid-rank-stars').attr('class').to_s.split.last[7..-1].to_f / 10
+      ret[:rank] = doc.css('div.rank span').attr('class').to_s.split.last[7..-1].to_f / 10
 
       pic_tag = doc.css('div.pic img').first
       if pic_tag
@@ -108,6 +113,31 @@ module Parser
       ret
     end
 
+    def parse_marriage_page(doc)
+      ret = {}
+
+      ret[:name] = doc.css('h1.shop-title').children[0].text.strip
+      ret[:address] = doc.css('div.shop-addr span.road-addr').text.strip
+
+      extract_items(doc, 'div.rst-taste em', ret)
+      extract_tels(doc, 'span.icon-phone', ret)
+
+      ret[:comment] = doc.css('div.rst-taste span[itemprop=count]').text.to_i
+
+      ret[:rank] = doc.css('span.item-rank-rst').attr('class').to_s.split.last[8..-1].to_f / 10
+
+      pic_tag = doc.css('div.mainpic img').first
+      if pic_tag
+        pic = pic_tag['src']
+      else
+        pic = nil
+      end
+
+      ret[:pic] = pic
+
+      ret
+    end
+
     def extract_tels(doc, exp, ret)
       tels = doc.css(exp)
       ret[:tels] = tels.map do |tag|
@@ -125,10 +155,23 @@ module Parser
         else
           key, value = item.text.split('：')
           if RATING_KESY.has_key?(key)
-            ret[RATING_KESY[key]] = value == '-' ? nil : value.to_f
+            ret[RATING_KESY[key]] = extract_num(value)
           else
             ret[key] = value == '-' ? nil : value.to_f
           end
+        end
+      end
+    end
+
+    def extract_num(value)
+      if value == '-'
+        return nil
+      else
+        m = /\D*((\d|\.)*)\D*/.match(value)
+        if m
+          m[1].to_f
+        else
+          nil
         end
       end
     end
