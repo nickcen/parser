@@ -1,6 +1,7 @@
 # encoding:utf-8
 
 require 'nokogiri'
+require 'date'
 
 module Parser
   class ITJuzi
@@ -10,6 +11,8 @@ module Parser
       doc = Nokogiri::HTML(file_content)
       doc.css('ul.list-main-icnset')[1].css('li').each do |li|
         vals = {}
+        vals[:link] = li.css('a').first['href']
+        vals[:s_id] = vals[:link].split('/').last
         vals[:img] = li.css('img').first['src']
         vals[:title] = li.css('p.title').text
         vals[:des] = li.css('p.des').text
@@ -17,6 +20,7 @@ module Parser
         vals[:loca] = li.css('span.loca > a').text
         vals[:found_date] = extract_date(li.css('i.date').text.strip)
         vals[:latest_round] = li.css('i.round span').text
+
         rets << vals
       end
       rets
