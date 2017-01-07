@@ -16,8 +16,13 @@ module Parser
         vals[:img] = li.css('img').first['src']
         vals[:chengshe], vals[:brand] = extract_chengse_and_brand(li.css('h3').text)
         vals[:des] = li.css('p').text.strip
-        vals[:price] = li.css('div.price span').first.next.text.strip
-        vals[:original_price] = li.css('del').text.strip[1..-1]
+        if li.css('div.price span').first
+          vals[:price] = li.css('div.price span').first.next.text.strip
+          vals[:original_price] = li.css('del').text.strip[1..-1]
+        else
+          vals[:price] = nil
+          vals[:original_price] = nil
+        end
         
         rets << vals
       end
@@ -26,9 +31,8 @@ module Parser
 
     private
     def extract_chengse_and_brand(val)
-      m = /【(.*)】(.*)/.match(val)
-
-      return [m[1], m[2]]
+      m = /(【(.*)】)?(.*)/.match(val)
+      return [m[2], m[3]]
     end
 
     def extract_date(date)
